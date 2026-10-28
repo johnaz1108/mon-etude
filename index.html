@@ -9854,8 +9854,8 @@ Traduction du passage : ${String(s.fr || "").replace(/<[^>]+>/g, "")}`;
   const mdTr = x => LANG === "he" ? "" : (LANG === "fr" ? x[4] : LANG === "en" ? x[5] : x[6]) || "";
   function mdHTML(k, c, vv){
     const L = mdOf(k, c, vv); if (!L.length) return "";
-    return `<div class="rmd"><span class="rlab">מדרש${LANG === "he" ? "" : " · " + T("Midrach")}</span>${L.map(x => { const t = mdTr(x);
-      return `<div class="rmdn"><b lang="he">${x[1]}</b>${LANG === "he" ? "" : ` · ${x[2]}`}</div><div class="rmdh" lang="he">${x[3]}</div>${t ? `<div class="rrt">${t}</div>` : LANG === "he" ? "" : `<p class="note" style="margin:0">${T("La traduction de ce midrach arrive bientôt.")}</p>`}`; }).join("")}</div>`;
+    return `<div class="rcm rmd"><details><summary>מדרש${LANG === "he" ? "" : " · " + T("Midrach")} <small>(${nf(L.length)})</small></summary>${L.map(x => { const t = mdTr(x);
+      return `<div class="rmdn"><b lang="he">${x[1]}</b>${LANG === "he" ? "" : ` · ${x[2]}`}</div><div class="rmdh" lang="he">${x[3]}</div>${t ? `<div class="rrt">${t}</div>` : LANG === "he" ? "" : `<p class="note" style="margin:0">${T("La traduction de ce midrach arrive bientôt.")}</p>`}`; }).join("")}</details></div>`;
   }
   // une seule source pour un passouk : Rachi, Onkelos, un commentateur ou le Midrach
   function src1(k, v, key){
