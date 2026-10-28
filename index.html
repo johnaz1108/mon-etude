@@ -10187,7 +10187,7 @@ ${ra.map((x, i) => (i + 1) + ". " + x).join("\n")}`;
   }
   let tnPk = false;
   // Nevi'im et Ketouvim : commentateurs et thèmes du livre, rangés à part (nk/<livre>.txt)
-  const NK = {}, NKE = {};
+  const NK = {}, NKE = {}, nkWait = {};
   const loadNK = async k => { if (NK[k] || NKE[k]) return; try { const t = await (await fetch("nk/" + k + ".txt")).text(); const b = Uint8Array.from(atob(t.trim()), c => c.charCodeAt(0)); NK[k] = JSON.parse(await new Response(new Blob([b]).stream().pipeThrough(new DecompressionStream("gzip"))).text()); } catch(e) { NKE[k] = true; } };
   const NKC = [["rd", "רד״ק", "Radak"], ["mzd", "מצודת דוד", "Metsoudat David"], ["mzz", "מצודת ציון", "Metsoudat Tsion"], ["rl", "רלב״ג", "Ralbag"], ["ml", "מלבי״ם", "Malbim"]];
   const nkOf = (k, c, v, s) => ((((NK[k] || {}).cm || {})[s] || [])[c] || [])[v] || [];
@@ -10198,12 +10198,14 @@ ${ra.map((x, i) => (i + 1) + ". " + x).join("\n")}`;
     return `<div class="rcm"><details${open ? " open" : ""}><summary><span lang="he">${n[1]}</span>${LANG === "he" ? "" : " · " + T(n[2])} <small>(${nf(L.length)})</small></summary>${L.map(x => `<div class="rcmh" lang="he">${x}</div>`).join("")}</details></div>`; };
   const tnRaH = (D, c, v, open) => { const ra = tnRa(D, c, v), re = tnRe(D, c, v), tag = LANG === "es" ? `<span class="tag">${T("en anglais")}</span>` : "";
     return ra.length ? `<div class="rcm"><details${open ? " open" : ""}><summary><span lang="he">רש״י</span>${LANG === "he" ? "" : " · " + T("Rachi")} <small>(${nf(ra.length)})</small></summary>${ra.map((r, i) => `<div class="rrh" lang="he">${r}</div>${re[i] ? `<div class="rrt">${re[i]}${tag}</div>` : ""}`).join("")}${tnRfB(D, c, v, ra)}</details></div>` : ""; };
-  async function tnHTML(sec){
+  async function tnHTML(sec){ try { return await tnHTML0(sec); } catch(e) { console.error(e); tpX = null; return `<div class="card stack"><p class="note" style="margin:0">${T("Ce livre n'a pas pu être chargé. Vérifie ta connexion.")}</p></div>`; } }
+  async function tnHTML0(sec){
     const G = sec === "nv" ? NVG : KTG, kk = "tb" + sec, k = S[kk], b = k && tnBk(k), he = LANG === "he";
     tpX = null;
     const grid = () => G.map(([gn, L]) => `<p class="lbl">${T(gn)}</p><div class="tkbk tnbooks">${L.map(x => `<button data-tnb="${x[0]}" aria-pressed="${x[0] === k}"><span class="eti">${sec === "nv" ? ICO.nv : ICO.kt}</span><b lang="he">${x[1]}</b>${he ? "" : `<small>${tnName(x)}</small>`}</button>`).join("")}</div>`).join("");
     if (!b) return `<div class="card ettk stack"><p class="lbl" style="margin:0">${T("Choisis le livre")}</p>${grid()}</div>`;
-    await Promise.all([loadTK(k), loadNK(k)]);
+    await loadTK(k);
+    if (!NK[k] && !NKE[k] && !nkWait[k]) { nkWait[k] = true; const tm = new Promise(r => setTimeout(r, 15000)); Promise.race([loadNK(k), tm]).then(() => { if (!NK[k]) NKE[k] = true; if (S["tb" + (S.et || "nv")] === k) { const y = scrollY; draw().then(() => scrollTo(0, y)); } }); }
     if (!TK[k]) return `<div class="card stack"><p class="note" style="margin:0">${T("Ce livre n'a pas pu être chargé. Vérifie ta connexion.")}</p>${grid()}</div>`;
     const D = TK[k]; D.k = k; const nC = D.he.length, c = Math.min(Math.max(S["tc" + k] || 1, 1), nC), ci = c - 1;
     const X = nkX(k); tpX = X; const TL = tpOf(X);
