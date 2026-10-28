@@ -7873,9 +7873,9 @@ html.shbon,html.shbon body{overflow:hidden}
 .rsv .rok .rlab{font-size:.72rem;font-weight:800;color:var(--c1);letter-spacing:.05em}
 .rsv .rokh,.rsv .rcmh{direction:rtl;text-align:right;font-family:var(--f-heb),serif;font-size:1.02rem;line-height:1.8;color:var(--ink)}
 .rsv .rcmh{font-size:.98rem}
-.rsv .rcm summary{cursor:pointer;font-size:.72rem;font-weight:800;color:var(--c1);letter-spacing:.05em;padding:2px 0}
+.rsv .rcm summary,#gmPop .gmrc summary{cursor:pointer;font-size:.72rem;font-weight:800;color:var(--c1);letter-spacing:.05em;padding:2px 0}
 .rsv .rcm summary small{font-weight:600;color:var(--muted)}
-.rsv .rcm details{display:flex;flex-direction:column;gap:6px}
+.rsv .rcm details,#gmPop .gmrc details{display:flex;flex-direction:column;gap:6px}
 .rsv .rcm details[open]>summary{margin-bottom:4px}
 .rsv .rex{font-size:.95rem;line-height:1.6;background:color-mix(in srgb,var(--gold) 12%,var(--surface));border-radius:12px;padding:10px 12px}
 .rsv .rex b{display:block;font-size:.72rem;letter-spacing:.05em;color:var(--gold);margin-bottom:2px;text-transform:uppercase}
@@ -8635,7 +8635,7 @@ window.trAll = fr => ["he", "en", "es"].map(l => TR[l] && TR[l][fr]);
   // Police Rachi chargée seulement quand on en a besoin
   let fontOk = false;
   const font = () => { if (fontOk) return; fontOk = true; const l = document.createElement("link"); l.rel = "stylesheet"; l.href = "https://fonts.googleapis.com/css2?family=Noto+Rashi+Hebrew:wght@400;700&display=swap"; document.head.append(l); };
-  let S = Object.assign({r:false, t:false, n:true, u:true, fs:1}, store.get("mp-rsv", {})); if (document.title === "Mon étude") S.hl = [];
+  let S = Object.assign({r:false, t:false, n:true, u:true, fs:1}, store.get("mp-rsv", {})); S.hl = [];
   let EP = store.get("mp-etu-p", null), pkOpen = false, pkBook = null;
   let WW = null;
   // Le texte source compte le paseq (׀) comme un mot : on l'enlève quand l'appli ne le compte pas
@@ -9894,6 +9894,7 @@ Traduction du passage : ${String(s.fr || "").replace(/<[^>]+>/g, "")}`;
   };
   // ---- Tanakh, Torah : les livres en tuiles, la grille des parachiot ou des perakim, « Ce que je lis » et la lecture d'une seule source ----
   const TKC = {Genesis:50, Exodus:40, Leviticus:27, Numbers:36, Deuteronomy:34};
+  const SRCHE = {all:"הכל", t:"תרגום", x:"ביאור", ra:"רש״י", o:"אונקלוס", r:"רמב״ן", i:"אבן עזרא", s:"ספורנו", h:"אור החיים", b:"בעל הטורים", md:"מדרש", th:"נושאים"};
   const RD = [["t", "Traduction"], ["ra", "Rachi"], ["o", "Onkelos"], ["r", "Ramban"], ["i", "Ibn Ezra"], ["s", "Sforno"], ["h", "Or Ha'haïm"], ["b", "Baal HaTourim"], ["md", "Midrach"]];
   const rdOn = k => k === "t" ? !!S.t : k === "ra" ? !!S.r : k === "md" ? !!S.md : (S.cm || []).includes(k);
   const cvn = x => { const [c, v] = String(x).split(":").map(Number); return c * 1000 + v; };
@@ -9995,12 +9996,12 @@ Traduction du passage : ${String(s.fr || "").replace(/<[^>]+>/g, "")}`;
     h += by === "p" ? `<div class="hltabs pkg tkg" dir="rtl">${READ.P.filter(x => x.book === pkBook).map(x => `<button data-etp="${esc(x.p)}" aria-pressed="${x.p === X.p}"><b lang="he">${nk(x.he)}</b>${he ? "" : `<small dir="auto">${parName(x)}</small>`}</button>`).join("")}</div>`
       : `<div class="hltabs pkg tkg" dir="rtl">${Array.from({length: TKC[pkBook] || 0}, (_, i) => i + 1).map(c => `<button data-tkc="${c}" aria-pressed="${pkBook === X.book && chaps.includes(c)}"><b lang="he">${hebNum(c)}</b>${he ? "" : `<small>${c}</small>`}</button>`).join("")}</div>`;
     h += `<p class="pkcap"><bdi lang="he" dir="rtl"><b>${BOOKS.find(b => b[0] === X.book)[2]} · ${nk(X.he)}</b></bdi>${he ? "" : ` <bdi class="pkfr">${bookName(X.book)} · ${parName(X)}</bdi>`}</p>`;
-    h += `<p class="lbl" style="margin:0">${T("Ce que je lis")}</p><div class="ethl tkrd">${RD.filter(([k]) => !(he && k === "t")).map(([k, n]) => `<button data-rd="${k}" aria-pressed="${rdOn(k)}">${T(n)}</button>`).join("")}</div>`;
+    h += `<p class="lbl" style="margin:0">${T("Ce que je lis")}</p><div class="ethl tkrd">${RD.filter(([k]) => !(he && k === "t")).map(([k, n]) => `<button data-rd="${k}" aria-pressed="${rdOn(k)}"><b lang="he">${SRCHE[k] || T(n)}</b>${he ? "" : ` <small>${T(n)}</small>`}</button>`).join("")}</div>`;
     const TL = tpOf(X); if (TL.length) h += `<p class="lbl" style="margin:0">${T("Les thèmes de la paracha")}</p>${tpGroups(X, TL)}${tpCard(X, TL)}`;
-    h += `<label class="tkone"><span>${T("Une seule source en continu")}</span><select data-one aria-label="${T("Une seule source en continu")}"><option value="">${T("Non, le texte avec mes choix")}</option>${RD.filter(([k]) => k !== "t").map(([k, n]) => `<option value="${k}"${S.one === k ? " selected" : ""}>${F("{0} seulement", T(n))}</option>`).join("")}</select></label>`;
+    h += `<label class="tkone"><span>${T("Une seule source en continu")}</span><select data-one aria-label="${T("Une seule source en continu")}"><option value="">${T("Non, le texte avec mes choix")}</option>${RD.filter(([k]) => k !== "t").map(([k, n]) => `<option value="${k}"${S.one === k ? " selected" : ""}>${F("{0} seulement", LANG === "he" ? SRCHE[k] : SRCHE[k] + " · " + T(n))}</option>`).join("")}</select></label>`;
     const L = SW.filter(([key]) => key !== "r" && key !== "t" && (key !== "n" || S.r) && (key !== "w" || LANG !== "he"));
     h += `<details class="tkmore"${S.os ? " open" : ""}><summary>${T("Plus d'outils")} <small>${F("{0} sur {1} activées", nf(L.filter(([key]) => S[key]).length), nf(L.length))}</small></summary><div class="etsw">${L.map(([key, n]) => `<div class="swrow"><span class="lbl">${T(n)}</span><button class="sw" role="switch" data-ets="${key}" aria-checked="${!!S[key]}" aria-label="${T(n)}"><i></i></button></div>`).join("")}</div>
-      <p class="lbl ethlL" style="margin:4px 0 0">${T("Surligner dans le texte")}</p><div class="ethl">${HL.map(([key, n]) => `<button data-hl="${key}" aria-pressed="${(S.hl || []).includes(key)}">${T(n)}</button>`).join("")}</div></details>`;
+      </details>`;
     h += `<p class="lbl" style="margin:0">${T("Aller au perek")}</p><div class="etper">${chaps.map(c => `<button data-etc="${c}"><bdi><b>${hebNum(c)}</b></bdi>${he ? "" : ` <bdi>${c}</bdi>`}</button>`).join("")}</div>`;
     return h + `</div>`;
   }
@@ -10375,7 +10376,6 @@ ${ra.map((x, i) => (i + 1) + ". " + x).join("\n")}`;
   // La bulle : on touche un passouk, elle s'ouvre sur lui
   const pop = document.createElement("div"); pop.className = "prov"; pop.id = "rsvPop"; pop.hidden = true; pop.innerHTML = `<div class="prbox" role="dialog" aria-modal="true"></div>`; document.body.append(pop);
   const pbox = pop.querySelector(".prbox"); let cur = -1, ptab = "all";
-  const SRCHE = {all:"הכל", t:"תרגום", x:"ביאור", ra:"רש״י", o:"אונקלוס", r:"רמב״ן", i:"אבן עזרא", s:"ספורנו", h:"אור החיים", b:"בעל הטורים", md:"מדרש", th:"נושאים"};
   async function openV(i){
     const X = par(), k = X.book, V = verses(X); if (!V[i]) return; cur = i;
     pop.hidden = false; document.body.style.overflow = "hidden";
@@ -10802,6 +10802,9 @@ ${ra.map((x, i) => (i + 1) + ". " + x).join("\n")}`;
   new MutationObserver(() => scan()).observe(document.documentElement, {childList:true, subtree:true});
   scan();
 })();
+
+;(() => { const fold = r => { if (!r.querySelectorAll) return; r.querySelectorAll(".rok>.rlab:first-child,.rra>.rlab:first-child,.gmrc>.rlab:first-child").forEach(l => { const p = l.parentNode, d = document.createElement("details"), sm = document.createElement("summary"); d.open = true; sm.innerHTML = l.innerHTML; const ch = [...p.childNodes].filter(n => n !== l); l.remove(); d.append(sm, ...ch); p.append(d); p.classList.add("rcm"); }); };
+  new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => n.nodeType === 1 && fold(n.parentNode || n)))).observe(document.body, {childList:true, subtree:true}); fold(document.body); })();
 </script>
 <!-- ASSISTANT DISCOURS : l'élève choisit 2 à 4 idées centrales de sa paracha, ses idées de la boîte, la note finale ; Claude écrit un brouillon unique à relire et à compléter -->
 <style>
